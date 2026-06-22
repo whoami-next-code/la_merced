@@ -43,10 +43,29 @@ function loadEnv() {
 loadEnv();
 
 const url = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
-if (!url || !serviceKey || url.includes('your-project')) {
-  console.error('Configura SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en backend/.env');
+if (!url || url.includes('your-project')) {
+  console.error('Configura SUPABASE_URL en backend/.env');
+  process.exit(1);
+}
+
+if (!serviceKey?.trim()) {
+  console.error(`
+❌ Falta SUPABASE_SECRET_KEY en backend/.env
+
+El script seed:admin necesita la SECRET KEY (no la publishable).
+
+1. Abre https://supabase.com/dashboard → proyecto idbzttrtzmhrlwsomphz
+2. Settings → API → copia "secret key" (sb_secret_...)
+3. Pégala en backend/.env:
+
+   SUPABASE_SECRET_KEY=sb_secret_...
+   SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
+
+4. Vuelve a ejecutar: npm run seed:admin
+`);
   process.exit(1);
 }
 

@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { ShoppingCart, Heart, User, Search, Menu, MessageCircle } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { PUBLIC_ROUTES } from '@/constants/routes';
+import { cn } from '@/lib/utils';
 
 interface PublicHeaderProps {
   cartCount?: number;
@@ -10,71 +9,87 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ cartCount = 0 }: PublicHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
-        <Link href={PUBLIC_ROUTES.HOME} className="flex items-center gap-2 shrink-0">
-          <span className="text-lg font-bold tracking-tight text-primary">La Merced PyK</span>
-        </Link>
+    <header className="sticky top-0 z-50">
+      <div className="bg-foreground text-background">
+        <div className="container mx-auto flex h-9 items-center justify-center px-4 text-center text-[11px] font-medium uppercase tracking-[0.2em]">
+          Envíos en la ciudad · Hasta 10% en tu primera compra
+        </div>
+      </div>
 
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-          <Link href={PUBLIC_ROUTES.CATALOG} className="hover:text-primary transition-colors">
-            Catálogo
+      <div className="border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+        <div className="container mx-auto flex h-16 items-center justify-between gap-6 px-4 md:h-[4.5rem]">
+          <Link
+            href={PUBLIC_ROUTES.HOME}
+            className="shrink-0 font-[family-name:var(--font-heading)] text-xl font-semibold tracking-tight md:text-2xl"
+          >
+            La Merced <span className="text-accent">PyK</span>
           </Link>
-          <Link href={PUBLIC_ROUTES.CATEGORIES} className="hover:text-primary transition-colors">
-            Categorías
-          </Link>
-          <Link href={PUBLIC_ROUTES.PROMOTIONS} className="hover:text-primary transition-colors">
-            Promociones
-          </Link>
-          <Link href={PUBLIC_ROUTES.CONTACT} className="hover:text-primary transition-colors">
-            Contacto
-          </Link>
-        </nav>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link
-            href={PUBLIC_ROUTES.CATALOG}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'hidden sm:inline-flex')}
-            aria-label="Buscar"
-          >
-            <Search className="h-5 w-5" />
-          </Link>
-          <Link
-            href={PUBLIC_ROUTES.CHAT}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-            aria-label="Chat de atención"
-          >
-            <MessageCircle className="h-5 w-5" />
-          </Link>
-          <Link
-            href={PUBLIC_ROUTES.FAVORITES}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-            aria-label="Favoritos"
-          >
-            <Heart className="h-5 w-5" />
-          </Link>
-          <Link
-            href={PUBLIC_ROUTES.CART}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'relative')}
-            aria-label="Carrito"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                {cartCount > 9 ? '9+' : cartCount}
-              </span>
-            )}
-          </Link>
-          <Link
-            href={PUBLIC_ROUTES.PROFILE}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-            aria-label="Mi perfil"
-          >
-            <User className="h-5 w-5" />
-          </Link>
-          <Link href={PUBLIC_ROUTES.CATALOG} className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'lg:hidden')}>
-            <Menu className="h-5 w-5" />
-          </Link>
+          <nav className="hidden items-center gap-8 text-[11px] font-semibold uppercase tracking-[0.18em] lg:flex">
+            {[
+              { href: PUBLIC_ROUTES.CATALOG, label: 'Catálogo' },
+              { href: PUBLIC_ROUTES.CATEGORIES, label: 'Categorías' },
+              { href: PUBLIC_ROUTES.PROMOTIONS, label: 'Promociones' },
+              { href: PUBLIC_ROUTES.CONTACT, label: 'Contacto' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="relative text-foreground/80 transition hover:text-foreground after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-accent after:transition-all hover:after:w-full"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <Link
+              href={PUBLIC_ROUTES.CATALOG}
+              className="hidden rounded-full p-2.5 transition hover:bg-secondary sm:inline-flex"
+              aria-label="Buscar"
+            >
+              <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
+            <Link
+              href={PUBLIC_ROUTES.CHAT}
+              className="rounded-full p-2.5 transition hover:bg-secondary"
+              aria-label="Chat"
+            >
+              <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
+            <Link
+              href={PUBLIC_ROUTES.FAVORITES}
+              className="rounded-full p-2.5 transition hover:bg-secondary"
+              aria-label="Favoritos"
+            >
+              <Heart className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
+            <Link
+              href={PUBLIC_ROUTES.CART}
+              className="relative rounded-full p-2.5 transition hover:bg-secondary"
+              aria-label="Carrito"
+            >
+              <ShoppingCart className="h-[18px] w-[18px]" strokeWidth={1.5} />
+              {cartCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href={PUBLIC_ROUTES.PROFILE}
+              className="rounded-full p-2.5 transition hover:bg-secondary"
+              aria-label="Perfil"
+            >
+              <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
+            <Link
+              href={PUBLIC_ROUTES.CATALOG}
+              className={cn('rounded-full p-2.5 transition hover:bg-secondary lg:hidden')}
+            >
+              <Menu className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
+          </div>
         </div>
       </div>
     </header>

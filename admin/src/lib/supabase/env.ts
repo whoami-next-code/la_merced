@@ -1,6 +1,9 @@
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const anonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  )?.trim();
 
   const isPlaceholder =
     !url ||
@@ -11,7 +14,7 @@ export function getSupabaseEnv() {
 
   if (isPlaceholder) {
     throw new Error(
-      'Supabase no está configurado. Edita admin/.env.local con NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY de tu proyecto en supabase.com',
+      'Supabase no está configurado. Edita admin/.env.local con NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.',
     );
   }
 

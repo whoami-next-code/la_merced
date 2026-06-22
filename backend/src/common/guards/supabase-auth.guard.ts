@@ -20,10 +20,10 @@ export class SupabaseAuthGuard implements CanActivate {
     }
 
     const token = authHeader.slice(7);
-    const supabase = createClient(
-      this.config.getOrThrow('SUPABASE_URL'),
-      this.config.getOrThrow('SUPABASE_ANON_KEY'),
-    );
+    const anonKey =
+      this.config.get<string>('SUPABASE_ANON_KEY') ||
+      this.config.getOrThrow<string>('SUPABASE_PUBLISHABLE_KEY');
+    const supabase = createClient(this.config.getOrThrow('SUPABASE_URL'), anonKey);
 
     const { data, error } = await supabase.auth.getUser(token);
 

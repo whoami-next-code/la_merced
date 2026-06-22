@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:la_merced_mobile/core/api/api_client.dart';
 import 'package:la_merced_mobile/features/dashboard/dashboard_screen.dart';
 import 'package:la_merced_mobile/features/products/products_screen.dart';
 import 'package:la_merced_mobile/features/orders/orders_screen.dart';
