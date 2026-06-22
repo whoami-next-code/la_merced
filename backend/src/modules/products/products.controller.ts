@@ -1,0 +1,70 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { ProductsService } from './products.service';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+
+@ApiTags('products')
+@Controller('products')
+export class ProductsController {
+  constructor(private readonly productsService: ProductsService) {}
+
+  @Get()
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'brandId', required: false })
+  findAll(
+    @Query('search') search?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('brandId') brandId?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.productsService.findAll({ search, categoryId, brandId, page, limit });
+  }
+
+  @Get('low-stock')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  getLowStock() {
+    return this.productsService.getLowStock();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.productsService.findOne(id);
+  }
+
+  @Post()
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  create(@Body() dto: CreateProductDto) {
+    return this.productsService.create(dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
+    return this.productsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  remove(@Param('id') id: string) {
+    return this.productsService.remove(id);
+  }
+}
