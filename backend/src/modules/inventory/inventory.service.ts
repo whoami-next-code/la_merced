@@ -19,13 +19,15 @@ export class InventoryService {
     return data;
   }
 
-  async registerMovement(body: {
-    product_id: string;
-    movement_type: 'entry' | 'exit' | 'adjustment';
-    quantity: number;
-    notes?: string;
-    created_by?: string;
-  }) {
+  async registerMovement(
+    body: {
+      product_id: string;
+      movement_type: 'entry' | 'exit' | 'adjustment';
+      quantity: number;
+      notes?: string;
+    },
+    userId?: string,
+  ) {
     const { data: product, error: productError } = await this.supabase
       .from('products')
       .select('stock_quantity')
@@ -52,6 +54,7 @@ export class InventoryService {
       .from('inventory_movements')
       .insert({
         ...body,
+        created_by: userId,
         stock_before: stockBefore,
         stock_after: stockAfter,
       })

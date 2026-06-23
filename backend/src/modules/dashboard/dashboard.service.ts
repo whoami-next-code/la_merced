@@ -21,6 +21,7 @@ export class DashboardService {
       pendingOrders,
       newCustomers,
       topProducts,
+      activeProducts,
     ] = await Promise.all([
       this.supabase
         .from('sales')
@@ -56,6 +57,10 @@ export class DashboardService {
         .from('sale_items')
         .select('product_id, quantity, product:products(name, sku)')
         .limit(50),
+      this.supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
     ]);
 
     const sum = (rows: { total: number }[] | null) =>
@@ -93,6 +98,7 @@ export class DashboardService {
       lowStockCount: lowStock.data?.length ?? 0,
       pendingOrders: pendingOrders.count ?? 0,
       newCustomers: newCustomers.count ?? 0,
+      activeProducts: activeProducts.count ?? 0,
       topProducts: topSold,
     };
   }

@@ -15,6 +15,6 @@ export const ADMIN_ROUTES = {
   LOGIN: '/login',
 } as const;
 
-export const STAFF_ROLES = ['super_admin', 'admin', 'seller', 'warehouse'] as const;
+export const STAFF_ROLES = ['super_admin', 'admin', 'manager', 'seller', 'warehouse'] as const;
 
 export const STORE_URL = process.env.NEXT_PUBLIC_STORE_URL ?? 'http://localhost:3000';

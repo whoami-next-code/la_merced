@@ -1,12 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { ReportsService } from './reports.service';
 
 @ApiTags('reports')
 @Controller('reports')
-@UseGuards(SupabaseAuthGuard)
-@ApiBearerAuth()
+@StaffAuth()
 export class ReportsController {
   constructor(private readonly service: ReportsService) {}
 

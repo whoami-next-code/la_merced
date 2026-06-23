@@ -59,7 +59,7 @@ export default function CarritoPage() {
           <p className="text-sm text-muted-foreground">Total</p>
           <p className="text-2xl font-bold">S/ {total.toFixed(2)}</p>
         </div>
-        <Link href={PUBLIC_ROUTES.LOGIN} className={cn(buttonVariants({ size: 'lg' }))}>
+        <Link href={PUBLIC_ROUTES.CHECKOUT} className={cn(buttonVariants({ size: 'lg' }))}>
           Proceder al pago
         </Link>
       </div>

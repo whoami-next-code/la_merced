@@ -13,4 +13,8 @@ export class UsersService {
   updateRole(id: string, role: string) {
     return this.supabase.from('profiles').update({ role }).eq('id', id).select().single();
   }
+
+  updateStatus(id: string, isActive: boolean) {
+    return this.supabase.from('profiles').update({ is_active: isActive }).eq('id', id).select().single();
+  }
 }

@@ -1,12 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { User } from '@supabase/supabase-js';
 import { InventoryService } from './inventory.service';
 
 @ApiTags('inventory')
 @Controller('inventory')
-@UseGuards(SupabaseAuthGuard)
-@ApiBearerAuth()
+@StaffAuth()
 export class InventoryController {
   constructor(private readonly service: InventoryService) {}
 
@@ -24,7 +25,8 @@ export class InventoryController {
       quantity: number;
       notes?: string;
     },
+    @CurrentUser() user: User,
   ) {
-    return this.service.registerMovement(body);
+    return this.service.registerMovement(body, user.id);
   }
 }

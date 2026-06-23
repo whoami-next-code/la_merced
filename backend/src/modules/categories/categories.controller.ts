@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { CategoriesService } from './categories.service';
 
 @ApiTags('categories')
@@ -14,9 +14,23 @@ export class CategoriesController {
   }
 
   @Post()
-  @UseGuards(SupabaseAuthGuard)
-  @ApiBearerAuth()
-  create(@Body() body: { name: string; slug: string; description?: string }) {
+  @StaffAuth()
+  create(@Body() body: { name: string; slug: string; description?: string; parent_id?: string }) {
     return this.service.create(body);
+  }
+
+  @Patch(':id')
+  @StaffAuth()
+  update(
+    @Param('id') id: string,
+    @Body() body: { name?: string; slug?: string; description?: string; is_active?: boolean },
+  ) {
+    return this.service.update(id, body);
+  }
+
+  @Delete(':id')
+  @StaffAuth()
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

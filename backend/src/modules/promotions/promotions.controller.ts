@@ -1,9 +1,6 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole, STAFF_ROLES } from '../../shared/constants/roles';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { AdminAuth } from '../../common/decorators/staff-auth.decorator';
 import { PromotionsService } from './promotions.service';
 
 @ApiTags('promotions')
@@ -17,17 +14,13 @@ export class PromotionsController {
   }
 
   @Get('admin')
-  @UseGuards(SupabaseAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  @ApiBearerAuth()
+  @AdminAuth()
   findAll() {
     return this.service.findAll();
   }
 
   @Post()
-  @UseGuards(SupabaseAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  @ApiBearerAuth()
+  @AdminAuth()
   create(@Body() body: Record<string, unknown>) {
     return this.service.create(body);
   }

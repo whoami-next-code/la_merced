@@ -1,6 +1,7 @@
 export type UserRole =
   | 'super_admin'
   | 'admin'
+  | 'manager'
   | 'seller'
   | 'warehouse'
   | 'customer';
@@ -68,6 +69,7 @@ export interface DashboardOverview {
   lowStockCount: number;
   pendingOrders: number;
   newCustomers: number;
+  activeProducts?: number;
   topProducts: { name: string; sku: string; qty: number }[];
   lowStock: { id: string; sku: string; name: string; stock_quantity: number; min_stock: number }[];
 }
@@ -78,6 +80,79 @@ export interface Promotion {
   description: string | null;
   discount_type: 'percentage' | 'fixed';
   discount_value: number;
+  min_purchase?: number;
   start_date: string;
   end_date: string;
+  is_active?: boolean;
+}
+
+export interface Customer {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  document_type: string | null;
+  document_number: string | null;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface Order {
+  id: string;
+  order_number: string;
+  customer_id: string;
+  status: string;
+  total: number;
+  subtotal: number;
+  created_at: string;
+  customer?: Customer;
+}
+
+export interface Sale {
+  id: string;
+  sale_number: string;
+  total: number;
+  subtotal: number;
+  payment_method: string;
+  status: string;
+  created_at: string;
+  customer?: Customer;
+}
+
+export interface InventoryMovement {
+  id: string;
+  product_id: string;
+  movement_type: 'entry' | 'exit' | 'adjustment';
+  quantity: number;
+  stock_before: number;
+  stock_after: number;
+  notes: string | null;
+  created_at: string;
+  product?: { id: string; sku: string; name: string };
+}
+
+export interface FaqEntry {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  keywords: string[] | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface AppSetting {
+  key: string;
+  value: Record<string, unknown>;
+  description: string | null;
+  updated_at: string;
+}
+
+export interface TopProductReport {
+  name?: string;
+  sku?: string;
+  qty?: number;
+  quantity?: number;
+  product_id?: string;
+  product?: { name: string; sku: string };
 }

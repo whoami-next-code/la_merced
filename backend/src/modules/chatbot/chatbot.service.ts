@@ -61,4 +61,20 @@ export class ChatbotService {
   getFaq() {
     return this.supabase.from('faq_entries').select('*').eq('is_active', true).order('sort_order');
   }
+
+  findAllFaqAdmin() {
+    return this.supabase.from('faq_entries').select('*').order('sort_order');
+  }
+
+  createFaq(body: { question: string; answer: string; category?: string; keywords?: string[] }) {
+    return this.supabase.from('faq_entries').insert(body).select().single();
+  }
+
+  updateFaq(id: string, body: Record<string, unknown>) {
+    return this.supabase.from('faq_entries').update(body).eq('id', id).select().single();
+  }
+
+  deleteFaq(id: string) {
+    return this.supabase.from('faq_entries').delete().eq('id', id);
+  }
 }

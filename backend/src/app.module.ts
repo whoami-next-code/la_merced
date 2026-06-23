@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,6 +17,10 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { UsersModule } from './modules/users/users.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
   imports: [
@@ -34,8 +39,14 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     ChatbotModule,
     DashboardModule,
     PromotionsModule,
+    SettingsModule,
+    AuditModule,
+    MonitoringModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+  ],
 })
 export class AppModule {}

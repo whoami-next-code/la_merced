@@ -66,6 +66,11 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
           <p className="mt-4 text-center text-sm text-muted-foreground">
+            <Link href={PUBLIC_ROUTES.RECOVER_PASSWORD} className="text-primary hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             ¿No tienes cuenta?{' '}
             <Link href={PUBLIC_ROUTES.REGISTER} className="text-primary hover:underline">Regístrate</Link>
           </p>

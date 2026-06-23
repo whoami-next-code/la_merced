@@ -1,84 +1,187 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  ShoppingCart, Package, AlertTriangle, ClipboardList, Users, TrendingUp,
+  ShoppingCart,
+  Package,
+  AlertTriangle,
+  ClipboardList,
+  Users,
+  TrendingUp,
 } from 'lucide-react';
-import { apiFetch } from '@/lib/api/client';
+import { useApi } from '@/hooks/use-api';
 import type { DashboardOverview } from '@/types';
+import { PageHeader } from '@/components/admin/page-header';
+import { StatCard } from '@/components/admin/stat-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ADMIN_ROUTES } from '@/constants/routes';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboardPage() {
+  const { api } = useApi();
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-dashboard'],
-    queryFn: () => apiFetch<DashboardOverview>('/dashboard/overview'),
+    queryFn: () => api<DashboardOverview>('/dashboard/overview'),
     retry: false,
   });
 
-  const cards = [
-    { title: 'Ventas hoy', value: stats ? `S/ ${stats.salesToday.toFixed(2)}` : '—', icon: ShoppingCart },
-    { title: 'Ventas del mes', value: stats ? `S/ ${stats.salesMonth.toFixed(2)}` : '—', icon: TrendingUp },
-    { title: 'Crecimiento', value: stats ? `${stats.salesGrowthPercent}%` : '—', icon: TrendingUp },
-    { title: 'Stock crítico', value: stats?.lowStockCount ?? '—', icon: AlertTriangle },
-    { title: 'Pedidos pendientes', value: stats?.pendingOrders ?? '—', icon: ClipboardList },
-    { title: 'Nuevos clientes', value: stats?.newCustomers ?? '—', icon: Users },
-    { title: 'Productos activos', value: '—', icon: Package },
+  const primaryCards = [
+    {
+      title: 'Ventas hoy',
+      value: stats ? `S/ ${stats.salesToday.toFixed(2)}` : '—',
+      icon: ShoppingCart,
+      accent: 'primary' as const,
+      href: ADMIN_ROUTES.SALES,
+    },
+    {
+      title: 'Ventas del mes',
+      value: stats ? `S/ ${stats.salesMonth.toFixed(2)}` : '—',
+      icon: TrendingUp,
+      accent: 'success' as const,
+      href: ADMIN_ROUTES.REPORTS,
+    },
+    {
+      title: 'Crecimiento',
+      value: stats ? `${stats.salesGrowthPercent}%` : '—',
+      icon: TrendingUp,
+      accent: 'info' as const,
+    },
+    {
+      title: 'Stock crítico',
+      value: stats?.lowStockCount ?? '—',
+      icon: AlertTriangle,
+      accent: 'warning' as const,
+      href: ADMIN_ROUTES.INVENTORY,
+    },
+  ];
+
+  const secondaryCards = [
+    {
+      title: 'Pedidos pendientes',
+      value: stats?.pendingOrders ?? '—',
+      icon: ClipboardList,
+      accent: 'chart-2' as const,
+      href: ADMIN_ROUTES.ORDERS,
+    },
+    {
+      title: 'Nuevos clientes',
+      value: stats?.newCustomers ?? '—',
+      icon: Users,
+      accent: 'info' as const,
+      href: ADMIN_ROUTES.CUSTOMERS,
+    },
+    {
+      title: 'Productos activos',
+      value: stats?.activeProducts ?? '—',
+      icon: Package,
+      accent: 'primary' as const,
+      href: ADMIN_ROUTES.PRODUCTS,
+    },
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Panel administrativo — La Merced PyK</p>
-      </div>
+    <div className="admin-page-enter space-y-8">
+      <PageHeader
+        title="Dashboard"
+        description="Resumen operativo — La Merced PyK"
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.slice(0, 4).map(({ title, value, icon: Icon }) => (
-          <Card key={title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{title}</CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
+      <section aria-labelledby="kpi-primary-heading">
+        <h2 id="kpi-primary-heading" className="sr-only">
+          Indicadores principales
+        </h2>
+        <div className="admin-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {primaryCards.map((card) => (
+            <StatCard key={card.title} {...card} isLoading={isLoading} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="kpi-secondary-heading">
+        <h2 id="kpi-secondary-heading" className="sr-only">
+          Indicadores secundarios
+        </h2>
+        <div className="admin-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {secondaryCards.map((card) => (
+            <StatCard key={card.title} {...card} isLoading={isLoading} />
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {stats?.topProducts?.length ? (
+          <Card className="admin-card border-0">
+            <CardHeader className="border-b border-border/60">
+              <CardTitle className="text-base font-semibold">Productos más vendidos</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{isLoading ? '...' : value}</div>
+            <CardContent className="p-0">
+              <ul className="divide-y divide-border/60">
+                {stats.topProducts.map((p, i) => (
+                  <li
+                    key={`${p.sku}-${i}`}
+                    className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm transition-colors hover:bg-muted/40"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary"
+                        aria-hidden
+                      >
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{p.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{p.sku}</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{p.qty} uds.</Badge>
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        {cards.slice(4).map(({ title, value, icon: Icon }) => (
-          <Card key={title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">{title}</CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{isLoading ? '...' : value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {stats?.topProducts?.length ? (
-        <Card>
-          <CardHeader><CardTitle>Productos más vendidos</CardTitle></CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {stats.topProducts.map((p, i) => (
-                <li key={i} className="flex justify-between text-sm">
-                  <span>{p.name} <span className="text-muted-foreground">({p.sku})</span></span>
-                  <span className="font-medium">{p.qty} uds.</span>
-                </li>
+        ) : isLoading ? (
+          <Card className="admin-card border-0 p-5">
+            <Skeleton className="mb-4 h-5 w-48" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
+            </div>
+          </Card>
+        ) : null}
+
+        {stats?.lowStock?.length ? (
+          <Card className="admin-card border-0">
+            <CardHeader className="border-b border-border/60">
+              <CardTitle className="text-base font-semibold">Alertas de stock bajo</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ul className="divide-y divide-border/60">
+                {stats.lowStock.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.sku}</p>
+                    </div>
+                    <Badge variant="destructive">
+                      {p.stock_quantity} / {p.min_stock}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
 
       {!stats && !isLoading && (
-        <Card>
-          <CardContent className="pt-6 text-sm text-muted-foreground">
+        <Card className="admin-card border-0 border-dashed">
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
             Conecta Supabase y la API con credenciales de staff para ver indicadores en tiempo real.
           </CardContent>
         </Card>

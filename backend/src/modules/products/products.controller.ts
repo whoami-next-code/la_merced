@@ -7,10 +7,9 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
@@ -36,8 +35,7 @@ export class ProductsController {
   }
 
   @Get('low-stock')
-  @UseGuards(SupabaseAuthGuard)
-  @ApiBearerAuth()
+  @StaffAuth()
   getLowStock() {
     return this.productsService.getLowStock();
   }
@@ -48,22 +46,19 @@ export class ProductsController {
   }
 
   @Post()
-  @UseGuards(SupabaseAuthGuard)
-  @ApiBearerAuth()
+  @StaffAuth()
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
   }
 
   @Patch(':id')
-  @UseGuards(SupabaseAuthGuard)
-  @ApiBearerAuth()
+  @StaffAuth()
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
   }
 
   @Delete(':id')
-  @UseGuards(SupabaseAuthGuard)
-  @ApiBearerAuth()
+  @StaffAuth()
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }

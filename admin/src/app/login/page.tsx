@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ADMIN_ROUTES, STAFF_ROLES } from '@/constants/routes';
 import { toast } from 'sonner';
-import { Package } from 'lucide-react';
+import { Package, Shield } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase/env';
 
 function AdminLoginForm() {
@@ -71,18 +71,41 @@ function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="email">Correo</Label>
-        <Input id="email" type="email" {...register('email')} />
-        {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <div className="space-y-2">
+        <Label htmlFor="email">Correo electrónico</Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          placeholder="tu@empresa.com"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'email-error' : undefined}
+          {...register('email')}
+        />
+        {errors.email && (
+          <p id="email-error" className="text-sm text-destructive" role="alert">
+            {errors.email.message}
+          </p>
+        )}
       </div>
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="password">Contraseña</Label>
-        <Input id="password" type="password" {...register('password')} />
-        {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+        <Input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? 'password-error' : undefined}
+          {...register('password')}
+        />
+        {errors.password && (
+          <p id="password-error" className="text-sm text-destructive" role="alert">
+            {errors.password.message}
+          </p>
+        )}
       </div>
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="h-10 w-full rounded-xl" disabled={isSubmitting}>
         {isSubmitting ? 'Ingresando...' : 'Acceder al panel'}
       </Button>
     </form>
@@ -91,19 +114,36 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-            <Package className="h-6 w-6 text-blue-600" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.52_0.22_285/0.12),transparent_50%),radial-gradient(ellipse_at_bottom_left,oklch(0.62_0.18_330/0.08),transparent_50%)]"
+        aria-hidden
+      />
+      <Card className="relative w-full max-w-md admin-card border-0 shadow-[var(--shadow-card-hover)]">
+        <CardHeader className="space-y-4 text-center pb-2">
+          <div
+            className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+            aria-hidden
+          >
+            <Package className="size-7" />
           </div>
-          <CardTitle>Panel Administrativo</CardTitle>
-          <CardDescription>Acceso exclusivo para personal autorizado</CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-bold">Panel Administrativo</CardTitle>
+            <CardDescription className="flex items-center justify-center gap-1.5">
+              <Shield className="size-3.5" aria-hidden />
+              Acceso exclusivo para personal autorizado
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           {!isSupabaseConfigured() && (
-            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              Supabase no está configurado. Copia tus claves en <code className="text-xs">admin/.env.local</code> y reinicia el servidor.
+            <div
+              className="mb-5 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground"
+              role="status"
+            >
+              Supabase no está configurado. Copia tus claves en{' '}
+              <code className="rounded bg-background/60 px-1 text-xs">admin/.env.local</code> y
+              reinicia el servidor.
             </div>
           )}
           <Suspense fallback={<p className="text-sm text-muted-foreground">Cargando...</p>}>

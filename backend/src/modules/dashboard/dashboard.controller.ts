@@ -1,16 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole, STAFF_ROLES } from '../../shared/constants/roles';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('dashboard')
 @Controller('dashboard')
-@UseGuards(SupabaseAuthGuard, RolesGuard)
-@Roles(...STAFF_ROLES)
-@ApiBearerAuth()
+@StaffAuth()
 export class DashboardController {
   constructor(private readonly service: DashboardService) {}
 
