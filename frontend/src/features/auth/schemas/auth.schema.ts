@@ -1,13 +1,22 @@
 import { z } from 'zod';
 
+/** Validación permisiva: acepta cualquier texto con @ (útil en desarrollo). */
+export const emailField = z
+  .string()
+  .trim()
+  .min(3, 'Correo requerido')
+  .refine((value) => value.includes('@') && value.indexOf('@') > 0, {
+    message: 'Usa un formato como usuario@correo.com',
+  });
+
 export const loginSchema = z.object({
-  email: z.string().email('Correo inválido'),
+  email: emailField,
   password: z.string().min(6, 'Mínimo 6 caracteres'),
 });
 
 export const registerSchema = z.object({
   full_name: z.string().min(2, 'Nombre requerido'),
-  email: z.string().email('Correo inválido'),
+  email: emailField,
   phone: z.string().optional(),
   password: z.string().min(6, 'Mínimo 6 caracteres'),
   confirm_password: z.string(),

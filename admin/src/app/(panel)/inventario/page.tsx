@@ -57,8 +57,9 @@ export default function AdminInventarioPage() {
   });
 
   const { data: productsData } = useQuery({
-    queryKey: ['admin-products-select'],
-    queryFn: () => api<{ data: Product[] }>('/products?limit=200'),
+    queryKey: ['admin-products', { lite: true, limit: 200 }],
+    queryFn: () => api<{ data: Product[] }>('/products?lite=true&limit=200'),
+    staleTime: 2 * 60 * 1000,
   });
 
   const products = productsData?.data ?? [];

@@ -79,6 +79,7 @@ export interface Promotion {
   description: string | null;
   discount_type: 'percentage' | 'fixed';
   discount_value: number;
+  min_purchase?: number;
   start_date: string;
   end_date: string;
 }

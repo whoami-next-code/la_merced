@@ -1,18 +1,11 @@
 'use client';
 
 import { useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { clearApiTokenCache, getApiAccessToken } from '@/lib/api-token';
 import { apiFetch, apiUpload } from '@/lib/api/client';
 
 export function useApi() {
-  const getToken = useCallback(async () => {
-    const supabase = createClient();
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session?.access_token) {
-      throw new Error('Sesión expirada. Inicia sesión nuevamente.');
-    }
-    return session.access_token;
-  }, []);
+  const getToken = useCallback(async () => getApiAccessToken(), []);
 
   const api = useCallback(
     async <T>(path: string, options: RequestInit = {}) => {
@@ -30,5 +23,5 @@ export function useApi() {
     [getToken],
   );
 
-  return { api, getToken, upload };
+  return { api, getToken, upload, clearTokenCache: clearApiTokenCache };
 }

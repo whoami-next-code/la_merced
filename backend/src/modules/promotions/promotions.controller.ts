@@ -1,6 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminAuth } from '../../common/decorators/staff-auth.decorator';
+import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { User } from '@supabase/supabase-js';
 import { PromotionsService } from './promotions.service';
 import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
 
@@ -12,6 +15,13 @@ export class PromotionsController {
   @Get()
   findActive() {
     return this.service.findActive();
+  }
+
+  @Get('welcome-eligibility')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  welcomeEligibility(@CurrentUser() user: User) {
+    return this.service.getWelcomeEligibility(user.id);
   }
 
   @Get('admin')

@@ -21,10 +21,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function AdminDashboardPage() {
   const { api } = useApi();
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () => api<DashboardOverview>('/dashboard/overview'),
-    retry: false,
+    staleTime: 60 * 1000,
+    refetchInterval: 2 * 60 * 1000,
   });
 
   const primaryCards = [
@@ -44,7 +45,9 @@ export default function AdminDashboardPage() {
     },
     {
       title: 'Crecimiento',
-      value: stats ? `${stats.salesGrowthPercent}%` : '—',
+      value: stats
+        ? `${stats.salesGrowthPercent > 0 ? '+' : ''}${stats.salesGrowthPercent}%`
+        : '—',
       icon: TrendingUp,
       accent: 'info' as const,
     },
@@ -182,7 +185,9 @@ export default function AdminDashboardPage() {
       {!stats && !isLoading && (
         <Card className="admin-card border-0 border-dashed">
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Conecta Supabase y la API con credenciales de staff para ver indicadores en tiempo real.
+            {isError
+              ? 'No se pudieron cargar los indicadores. Verifica que el backend esté en marcha y vuelve a intentar.'
+              : 'Sin datos de ventas todavía. Registra ventas en POS o recibe pedidos web para ver indicadores.'}
           </CardContent>
         </Card>
       )}

@@ -100,17 +100,35 @@ export class ProductsService {
     return { available: !data, sku: normalized };
   }
 
-  async findAll(params?: { search?: string; categoryId?: string; brandId?: string; page?: number; limit?: number }) {
+  async findAll(params?: {
+    search?: string;
+    categoryId?: string;
+    brandId?: string;
+    page?: number;
+    limit?: number;
+    lite?: boolean;
+  }) {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 20;
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    let query = this.supabase
-      .from('products')
-      .select('*, category:categories(*), brand:brands(*), images:product_images(*)', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    let query = params?.lite
+      ? this.supabase
+          .from('products')
+          .select(
+            'id, sku, name, slug, sale_price, cost_price, stock_quantity, min_stock, is_active, category_id, brand_id, created_at, category:categories(id, name, slug), brand:brands(id, name, slug), images:product_images(id, url, storage_path, is_primary)',
+            { count: 'exact' },
+          )
+          .order('created_at', { ascending: false })
+          .range(from, to)
+      : this.supabase
+          .from('products')
+          .select('*, category:categories(*), brand:brands(*), images:product_images(*)', {
+            count: 'exact',
+          })
+          .order('created_at', { ascending: false })
+          .range(from, to);
 
     if (params?.search) {
       const term = sanitizeSearchTerm(params.search);
@@ -201,11 +219,10 @@ export class ProductsService {
     const { data, error } = await this.supabase
       .from('products')
       .select('id, sku, name, stock_quantity, min_stock')
-      .filter('stock_quantity', 'lte', 'min_stock')
       .eq('is_active', true);
 
     if (error) throw error;
-    return data;
+    return (data ?? []).filter((p) => Number(p.stock_quantity) <= Number(p.min_stock));
   }
 
   async addImage(

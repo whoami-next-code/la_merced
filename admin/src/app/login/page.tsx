@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
+import { clearApiTokenCache } from '@/lib/api-token';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ADMIN_ROUTES, STAFF_ROLES } from '@/constants/routes';
 import { toast } from 'sonner';
@@ -57,6 +58,7 @@ function AdminLoginForm() {
       }
 
       toast.success('Bienvenido al panel admin');
+      clearApiTokenCache();
       router.push(redirect);
       router.refresh();
     } catch (err) {

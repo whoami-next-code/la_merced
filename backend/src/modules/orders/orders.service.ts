@@ -6,8 +6,12 @@ import {
 } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../supabase/supabase.module';
-import { calculateOrderTotals } from '../../shared/utils/order-totals.util';
+import {
+  calculateOrderTotals,
+  calculatePromotionDiscount,
+} from '../../shared/utils/order-totals.util';
 import { SettingsService } from '../settings/settings.service';
+import { PromotionsService } from '../promotions/promotions.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
@@ -15,6 +19,7 @@ export class OrdersService {
   constructor(
     @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
     private readonly settingsService: SettingsService,
+    private readonly promotionsService: PromotionsService,
   ) {}
 
   findAll(status?: string) {
@@ -46,12 +51,28 @@ export class OrdersService {
 
     const { data, error } = await this.supabase
       .from('orders')
-      .select('*, items:order_items(*, product:products(id, name, sku, slug))')
+      .select(
+        `*,
+        items:order_items(
+          *,
+          product:products(
+            id,
+            name,
+            sku,
+            slug,
+            images:product_images(url, storage_path, is_primary)
+          )
+        )`,
+      )
       .eq('customer_id', customer.id)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return { data };
+    if (error) {
+      throw new BadRequestException(
+        error.message ?? 'No se pudieron cargar tus pedidos',
+      );
+    }
+    return { data: data ?? [] };
   }
 
   async findOne(id: string) {
@@ -67,14 +88,29 @@ export class OrdersService {
     return data;
   }
 
-  findByNumber(orderNumber: string) {
-    return this.supabase
+  async findByNumber(orderNumber: string) {
+    const { data, error } = await this.supabase
       .from('orders')
       .select(
-        '*, customer:customers(*), items:order_items(*, product:products(*)), history:order_status_history(*)',
+        `*,
+        customer:customers(*),
+        items:order_items(
+          *,
+          product:products(
+            *,
+            images:product_images(url, storage_path, is_primary)
+          )
+        ),
+        history:order_status_history(*)`,
       )
       .eq('order_number', orderNumber)
       .single();
+
+    if (error || !data) {
+      throw new NotFoundException('Pedido no encontrado');
+    }
+
+    return data;
   }
 
   async create(dto: CreateOrderDto, userId: string) {
@@ -144,10 +180,18 @@ export class OrdersService {
     });
 
     const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);
+
+    let discount = 0;
+    const welcome = await this.promotionsService.getWelcomeEligibility(userId);
+    if (welcome.eligible && welcome.promotion) {
+      discount = calculatePromotionDiscount(subtotal, welcome.promotion);
+    }
+
     const storeSettings = await this.settingsService.getStoreSettings();
-    const { tax, shipping_cost: shippingCost, total } = calculateOrderTotals(
+    const { shipping_cost: shippingCost, total } = calculateOrderTotals(
       subtotal,
       storeSettings,
+      discount,
     );
 
     const { data: order, error: orderError } = await this.supabase
@@ -157,9 +201,8 @@ export class OrdersService {
         order_number: '',
         status: 'pending',
         subtotal,
-        tax,
         shipping_cost: shippingCost,
-        discount: 0,
+        discount,
         total,
         payment_method: dto.payment_method ?? 'transfer',
         shipping_address: dto.shipping_address,
@@ -169,7 +212,11 @@ export class OrdersService {
       .select('id, order_number')
       .single();
 
-    if (orderError) throw orderError;
+    if (orderError) {
+      throw new BadRequestException(
+        orderError.message ?? 'No se pudo registrar el pedido',
+      );
+    }
 
     const itemsWithOrder = orderItems.map((item) => ({
       ...item,

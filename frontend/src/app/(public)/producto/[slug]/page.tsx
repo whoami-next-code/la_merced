@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { productsService } from '@/services/catalog.service';
@@ -13,8 +13,8 @@ import { getPrimaryImageUrl, resolveProductImageUrl } from '@/lib/catalog/produc
 import { getBrandLabel } from '@/lib/catalog/normalize';
 
 export default function ProductoPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+  const pathname = usePathname();
+  const slug = pathname.split('/').filter(Boolean).pop() ?? '';
   const { addItem } = useCart();
 
   const { data: product, isLoading } = useQuery({

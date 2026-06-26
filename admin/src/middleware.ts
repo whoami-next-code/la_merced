@@ -31,7 +31,10 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
   if (!user) {
     const url = request.nextUrl.clone();
@@ -40,13 +43,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const metaRole = user.app_metadata?.role as string | undefined;
+  if (metaRole && STAFF_ROLES.includes(metaRole) && user.user_metadata?.is_active !== false) {
+    return supabaseResponse;
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('role, is_active')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  const role = profile?.role ?? (user.app_metadata?.role as string | undefined);
+  const role = profile?.role ?? metaRole;
   const isActive = profile?.is_active ?? true;
 
   if (!isActive || !role || !STAFF_ROLES.includes(role)) {

@@ -29,14 +29,23 @@ export class ProductsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'brandId', required: false })
+  @ApiQuery({ name: 'lite', required: false })
   findAll(
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
     @Query('brandId') brandId?: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('lite') lite?: string,
   ) {
-    return this.productsService.findAll({ search, categoryId, brandId, page, limit });
+    return this.productsService.findAll({
+      search,
+      categoryId,
+      brandId,
+      page,
+      limit,
+      lite: lite === 'true' || lite === '1',
+    });
   }
 
   @Get('suggest-sku')

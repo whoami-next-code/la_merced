@@ -99,21 +99,24 @@ export default function AdminProductosPage() {
   const brandId = form.watch('brand_id');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-products'],
+    queryKey: ['admin-products', { lite: true, limit: 100 }],
     queryFn: async () => {
-      const res = await api<{ data: Product[] }>('/products?limit=100');
+      const res = await api<{ data: Product[] }>('/products?lite=true&limit=100');
       return { data: (res.data ?? []).map(normalizeProduct) };
     },
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ['admin-categories'],
     queryFn: () => api<Array<{ id: string; name: string; slug: string }>>('/categories'),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: brands = [] } = useQuery({
     queryKey: ['admin-brands'],
     queryFn: () => api<Array<{ id: string; name: string; slug: string }>>('/brands'),
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {

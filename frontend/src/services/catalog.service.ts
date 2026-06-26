@@ -44,6 +44,8 @@ export const chatbotService = {
     }),
 };
 
+import type { OrderSummary } from '@/types/order';
+
 export const ordersService = {
-  track: (orderNumber: string) => apiFetch(`/orders/track/${orderNumber}`),
+  track: (orderNumber: string) => apiFetch<OrderSummary>(`/orders/track/${encodeURIComponent(orderNumber)}`),
 };
