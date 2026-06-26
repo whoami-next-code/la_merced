@@ -8,6 +8,7 @@ import { useApi } from '@/hooks/use-api';
 import type { Category } from '@/types';
 import { PageHeader } from '@/components/admin/page-header';
 import { DataTableShell } from '@/components/admin/data-table-shell';
+import { ImageUpload } from '@/components/admin/image-upload';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,12 +40,12 @@ function slugify(text: string) {
     .replace(/^-|-$/g, '');
 }
 
-type CategoryForm = { name: string; slug: string; description: string; is_active: boolean };
+type CategoryForm = { name: string; slug: string; description: string; image_url: string; is_active: boolean };
 
-const emptyForm: CategoryForm = { name: '', slug: '', description: '', is_active: true };
+const emptyForm: CategoryForm = { name: '', slug: '', description: '', image_url: '', is_active: true };
 
 export default function AdminCategoriasPage() {
-  const { api } = useApi();
+  const { api, upload } = useApi();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -63,6 +64,7 @@ export default function AdminCategoriasPage() {
         name: form.name.trim(),
         slug: form.slug.trim() || slugify(form.name),
         description: form.description.trim() || undefined,
+        image_url: form.image_url.trim() || undefined,
         ...(editing ? { is_active: form.is_active } : {}),
       };
       if (editing) {
@@ -106,6 +108,7 @@ export default function AdminCategoriasPage() {
       name: cat.name,
       slug: cat.slug,
       description: cat.description ?? '',
+      image_url: cat.image_url ?? '',
       is_active: cat.is_active,
     });
     setDialogOpen(true);
@@ -218,6 +221,15 @@ export default function AdminCategoriasPage() {
                 className="flex min-h-[60px] w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               />
             </div>
+            <ImageUpload
+              label="Imagen de categoría"
+              currentUrl={form.image_url || null}
+              onFileSelected={async (file) => {
+                const result = await upload<{ url: string }>('/upload/product-image', file);
+                setForm((f) => ({ ...f, image_url: result.url }));
+              }}
+              onRemove={() => setForm((f) => ({ ...f, image_url: '' }))}
+            />
             {editing ? (
               <div className="flex items-center gap-2">
                 <input

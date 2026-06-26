@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminAuth } from '../../common/decorators/staff-auth.decorator';
 import { PromotionsService } from './promotions.service';
+import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
 
 @ApiTags('promotions')
 @Controller('promotions')
@@ -21,7 +22,19 @@ export class PromotionsController {
 
   @Post()
   @AdminAuth()
-  create(@Body() body: Record<string, unknown>) {
-    return this.service.create(body);
+  create(@Body() dto: CreatePromotionDto) {
+    return this.service.create(dto);
+  }
+
+  @Patch(':id')
+  @AdminAuth()
+  update(@Param('id') id: string, @Body() dto: UpdatePromotionDto) {
+    return this.service.update(id, dto);
+  }
+
+  @Delete(':id')
+  @AdminAuth()
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

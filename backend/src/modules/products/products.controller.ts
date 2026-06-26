@@ -11,7 +11,12 @@ import {
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { ProductsService } from './products.service';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import {
+  AddProductImageDto,
+  CreateProductDto,
+  UpdateProductDto,
+  UpdateProductImageDto,
+} from './dto/product.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -32,6 +37,27 @@ export class ProductsController {
     @Query('limit') limit?: number,
   ) {
     return this.productsService.findAll({ search, categoryId, brandId, page, limit });
+  }
+
+  @Get('suggest-sku')
+  @StaffAuth()
+  @ApiQuery({ name: 'categoryId', required: true })
+  @ApiQuery({ name: 'brandId', required: true })
+  @ApiQuery({ name: 'excludeId', required: false })
+  suggestSku(
+    @Query('categoryId') categoryId: string,
+    @Query('brandId') brandId: string,
+    @Query('excludeId') excludeId?: string,
+  ) {
+    return this.productsService.suggestSku(categoryId, brandId, excludeId);
+  }
+
+  @Get('check-sku')
+  @StaffAuth()
+  @ApiQuery({ name: 'sku', required: true })
+  @ApiQuery({ name: 'excludeId', required: false })
+  checkSku(@Query('sku') sku: string, @Query('excludeId') excludeId?: string) {
+    return this.productsService.checkSkuAvailable(sku, excludeId);
   }
 
   @Get('low-stock')
@@ -61,5 +87,27 @@ export class ProductsController {
   @StaffAuth()
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
+  }
+
+  @Post(':id/images')
+  @StaffAuth()
+  addImage(@Param('id') id: string, @Body() dto: AddProductImageDto) {
+    return this.productsService.addImage(id, dto);
+  }
+
+  @Patch(':id/images/:imageId')
+  @StaffAuth()
+  updateImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @Body() dto: UpdateProductImageDto,
+  ) {
+    return this.productsService.updateImage(id, imageId, dto);
+  }
+
+  @Delete(':id/images/:imageId')
+  @StaffAuth()
+  removeImage(@Param('id') id: string, @Param('imageId') imageId: string) {
+    return this.productsService.removeImage(id, imageId);
   }
 }

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, apiUpload } from '@/lib/api/client';
 
 export function useApi() {
   const getToken = useCallback(async () => {
@@ -22,5 +22,13 @@ export function useApi() {
     [getToken],
   );
 
-  return { api, getToken };
+  const upload = useCallback(
+    async <T>(path: string, file: File) => {
+      const token = await getToken();
+      return apiUpload<T>(path, file, token);
+    },
+    [getToken],
+  );
+
+  return { api, getToken, upload };
 }

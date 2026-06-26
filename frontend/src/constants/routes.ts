@@ -6,6 +6,7 @@ export const PUBLIC_ROUTES = {
   FAVORITES: '/favoritos',
   ORDERS: '/pedidos',
   ORDER_TRACK: '/pedidos/seguimiento',
+  ORDER_CONFIRMATION: '/pedidos/confirmacion',
   CHECKOUT: '/checkout',
   PROFILE: '/perfil',
   RECOVER_PASSWORD: '/recuperar-contrasena',

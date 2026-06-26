@@ -23,3 +23,25 @@ export async function apiFetch<T>(
 
   return res.json();
 }
+
+export async function apiUpload<T>(
+  path: string,
+  file: File,
+  token: string,
+): Promise<T> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(error.message ?? 'Error al subir archivo');
+  }
+
+  return res.json();
+}

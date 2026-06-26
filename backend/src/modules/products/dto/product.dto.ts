@@ -13,17 +13,20 @@ export class CreateProductDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  slug?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   description?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsUUID()
-  category_id?: string;
+  category_id: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsUUID()
-  brand_id?: string;
+  brand_id: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -63,4 +66,37 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+}
+
+export class AddProductImageDto {
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  storage_path?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  is_primary?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  sort_order?: number;
+}
+
+export class UpdateProductImageDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  is_primary?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  sort_order?: number;
 }

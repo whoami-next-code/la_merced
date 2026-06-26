@@ -37,6 +37,12 @@ export class OrdersController {
     return this.service.findByNumber(orderNumber);
   }
 
+  @Get(':id')
+  @StaffAuth()
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+
   @Patch(':id/status')
   @StaffAuth()
   updateStatus(

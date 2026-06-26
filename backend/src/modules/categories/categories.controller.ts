@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { ApiTags } from '@nestjs/swagger';
 import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { CategoriesService } from './categories.service';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -15,17 +16,14 @@ export class CategoriesController {
 
   @Post()
   @StaffAuth()
-  create(@Body() body: { name: string; slug: string; description?: string; parent_id?: string }) {
-    return this.service.create(body);
+  create(@Body() dto: CreateCategoryDto) {
+    return this.service.create(dto);
   }
 
   @Patch(':id')
   @StaffAuth()
-  update(
-    @Param('id') id: string,
-    @Body() body: { name?: string; slug?: string; description?: string; is_active?: boolean },
-  ) {
-    return this.service.update(id, body);
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')

@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../supabase/supabase.module';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -12,16 +13,13 @@ export class CategoriesService {
     return data;
   }
 
-  async create(body: { name: string; slug: string; description?: string; parent_id?: string }) {
+  async create(body: CreateCategoryDto) {
     const { data, error } = await this.supabase.from('categories').insert(body).select().single();
     if (error) throw error;
     return data;
   }
 
-  async update(
-    id: string,
-    body: { name?: string; slug?: string; description?: string; is_active?: boolean },
-  ) {
+  async update(id: string, body: UpdateCategoryDto) {
     const { data, error } = await this.supabase
       .from('categories')
       .update(body)

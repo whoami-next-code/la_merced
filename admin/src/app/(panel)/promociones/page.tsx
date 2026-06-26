@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApi } from '@/hooks/use-api';
 import type { Promotion } from '@/types';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { PageHeader } from '@/components/admin/page-header';
 import { DataTableShell } from '@/components/admin/data-table-shell';
 import { Badge } from '@/components/ui/badge';
@@ -60,6 +61,9 @@ export default function AdminPromocionesPage() {
   const { api } = useApi();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editing, setEditing] = useState<Promotion | null>(null);
+  const [deleting, setDeleting] = useState<Promotion | null>(null);
   const [form, setForm] = useState<PromoForm>(emptyForm);
 
   const { data: promotions = [], isLoading } = useQuery({
@@ -67,26 +71,40 @@ export default function AdminPromocionesPage() {
     queryFn: () => api<Promotion[]>('/promotions/admin'),
   });
 
-  const createMutation = useMutation({
-    mutationFn: () =>
-      api('/promotions', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: form.name.trim(),
-          description: form.description.trim() || null,
-          discount_type: form.discount_type,
-          discount_value: Number(form.discount_value),
-          min_purchase: Number(form.min_purchase) || 0,
-          start_date: new Date(form.start_date).toISOString(),
-          end_date: new Date(form.end_date).toISOString(),
-          is_active: true,
-        }),
-      }),
+  const saveMutation = useMutation({
+    mutationFn: () => {
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        discount_type: form.discount_type,
+        discount_value: Number(form.discount_value),
+        min_purchase: Number(form.min_purchase) || 0,
+        start_date: new Date(form.start_date).toISOString(),
+        end_date: new Date(form.end_date).toISOString(),
+        is_active: true,
+      };
+      if (editing) {
+        return api(`/promotions/${editing.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      }
+      return api('/promotions', { method: 'POST', body: JSON.stringify(payload) });
+    },
     onSuccess: () => {
-      toast.success('Promoción creada');
+      toast.success(editing ? 'Promoción actualizada' : 'Promoción creada');
       queryClient.invalidateQueries({ queryKey: ['admin-promotions'] });
       setDialogOpen(false);
+      setEditing(null);
       setForm(emptyForm);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api(`/promotions/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      toast.success('Promoción eliminada');
+      queryClient.invalidateQueries({ queryKey: ['admin-promotions'] });
+      setDeleteOpen(false);
+      setDeleting(null);
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -94,7 +112,7 @@ export default function AdminPromocionesPage() {
   return (
     <div className="admin-page-enter space-y-6">
       <PageHeader title="Promociones" description="Ofertas y descuentos del catálogo">
-        <Button size="sm" className="gap-1.5" onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
+        <Button size="sm" className="gap-1.5" onClick={() => { setEditing(null); setForm(emptyForm); setDialogOpen(true); }}>
           <Plus className="size-4" aria-hidden />
           Nueva promoción
         </Button>
@@ -113,6 +131,7 @@ export default function AdminPromocionesPage() {
                 <TableHead scope="col">Descuento</TableHead>
                 <TableHead scope="col">Vigencia</TableHead>
                 <TableHead scope="col">Estado</TableHead>
+                <TableHead scope="col" className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -140,6 +159,28 @@ export default function AdminPromocionesPage() {
                       {p.is_active !== false ? 'Activa' : 'Inactiva'}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon-sm" onClick={() => {
+                        setEditing(p);
+                        setForm({
+                          name: p.name,
+                          description: p.description ?? '',
+                          discount_type: p.discount_type,
+                          discount_value: String(p.discount_value),
+                          min_purchase: String(p.min_purchase ?? 0),
+                          start_date: p.start_date.slice(0, 16),
+                          end_date: p.end_date.slice(0, 16),
+                        });
+                        setDialogOpen(true);
+                      }}>
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon-sm" onClick={() => { setDeleting(p); setDeleteOpen(true); }}>
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -152,7 +193,7 @@ export default function AdminPromocionesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Nueva promoción</DialogTitle>
+            <DialogTitle>{editing ? 'Editar promoción' : 'Nueva promoción'}</DialogTitle>
             <DialogDescription>Configura una oferta con vigencia.</DialogDescription>
           </DialogHeader>
           <form
@@ -162,7 +203,7 @@ export default function AdminPromocionesPage() {
                 toast.error('Completa los campos obligatorios');
                 return;
               }
-              createMutation.mutate();
+              saveMutation.mutate();
             }}
             className="grid gap-4"
           >
@@ -209,11 +250,24 @@ export default function AdminPromocionesPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={createMutation.isPending}>Crear promoción</Button>
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {editing ? 'Guardar cambios' : 'Crear promoción'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Eliminar promoción"
+        description={`¿Eliminar "${deleting?.name}"?`}
+        confirmLabel="Eliminar"
+        variant="destructive"
+        loading={deleteMutation.isPending}
+        onConfirm={() => { if (deleting) deleteMutation.mutate(deleting.id); }}
+      />
     </div>
   );
 }

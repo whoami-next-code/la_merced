@@ -39,6 +39,8 @@ npm-debug.log*
 
 # Testing
 coverage/
+e2e/test-results/
+e2e/fixtures/invalid.txt
 
 # Flutter
 mobile_app/.dart_tool/

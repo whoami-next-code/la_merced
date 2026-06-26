@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { normalizeProduct } from '@/lib/catalog/normalize';
 import type { Category, Product, Promotion } from '@/types';
 
 export async function getHomeCatalog() {
@@ -8,7 +9,7 @@ export async function getHomeCatalog() {
     supabase
       .from('products')
       .select(
-        'id, sku, slug, name, description, sale_price, cost_price, stock_quantity, min_stock, is_active, category:categories(id, name, slug), brand:brands(id, name, slug), images:product_images(id, url, is_primary)',
+        'id, sku, slug, name, description, sale_price, cost_price, stock_quantity, min_stock, is_active, category:categories(id, name, slug), brand:brands(id, name, slug), images:product_images(id, url, is_primary, storage_path)',
       )
       .eq('is_active', true)
       .order('created_at', { ascending: false })
@@ -26,11 +27,9 @@ export async function getHomeCatalog() {
       .limit(3),
   ]);
 
-  const products = (productsRes.data ?? []).map((row) => ({
-    ...row,
-    category: Array.isArray(row.category) ? row.category[0] : row.category,
-    brand: Array.isArray(row.brand) ? row.brand[0] : row.brand,
-  })) as Product[];
+  const products = (productsRes.data ?? []).map((row) =>
+    normalizeProduct(row as unknown as Product),
+  );
 
   return {
     products,

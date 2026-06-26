@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { StaffAuth } from '../../common/decorators/staff-auth.decorator';
 import { CustomersService } from './customers.service';
+import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -20,7 +21,17 @@ export class CustomersController {
   }
 
   @Post()
-  create(@Body() body: Record<string, unknown>) {
-    return this.service.create(body);
+  create(@Body() dto: CreateCustomerDto) {
+    return this.service.create(dto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
+    return this.service.update(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

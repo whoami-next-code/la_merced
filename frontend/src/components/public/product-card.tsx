@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { PUBLIC_ROUTES } from '@/constants/routes';
 import { useCart } from '@/providers/cart-provider';
 import { useFavorites } from '@/providers/favorites-provider';
+import { getPrimaryImageUrl } from '@/lib/catalog/product-images';
+import { getBrandLabel } from '@/lib/catalog/normalize';
 import type { Product } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +23,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   const { addItem } = useCart();
   const { toggle, isFavorite } = useFavorites();
   const slug = product.slug ?? product.id;
-  const image = product.images?.find((i) => i.is_primary)?.url ?? product.images?.[0]?.url;
+  const image = getPrimaryImageUrl(product.images);
+  const brandName = getBrandLabel(product.brand);
   const inStock = product.stock_quantity > 0;
   const isBoutique = variant === 'boutique';
 
@@ -114,6 +117,9 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
               {product.category.name}
             </p>
           )}
+          {brandName ? (
+            <p className="mb-1 text-xs text-muted-foreground">{brandName}</p>
+          ) : null}
           <Link href={PUBLIC_ROUTES.PRODUCT(slug)}>
             <h3
               className={cn(

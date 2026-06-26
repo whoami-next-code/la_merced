@@ -6,11 +6,16 @@ import {
 } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CLIENT } from '../../supabase/supabase.module';
+import { calculateOrderTotals } from '../../shared/utils/order-totals.util';
+import { SettingsService } from '../settings/settings.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(@Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient) {}
+  constructor(
+    @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
+    private readonly settingsService: SettingsService,
+  ) {}
 
   findAll(status?: string) {
     let query = this.supabase
@@ -47,6 +52,19 @@ export class OrdersService {
 
     if (error) throw error;
     return { data };
+  }
+
+  async findOne(id: string) {
+    const { data, error } = await this.supabase
+      .from('orders')
+      .select(
+        '*, customer:customers(*), items:order_items(*, product:products(*)), history:order_status_history(*)',
+      )
+      .eq('id', id)
+      .single();
+
+    if (error) throw new NotFoundException('Pedido no encontrado');
+    return data;
   }
 
   findByNumber(orderNumber: string) {
@@ -126,8 +144,11 @@ export class OrdersService {
     });
 
     const subtotal = orderItems.reduce((acc, i) => acc + i.subtotal, 0);
-    const shippingCost = 0;
-    const total = subtotal + shippingCost;
+    const storeSettings = await this.settingsService.getStoreSettings();
+    const { tax, shipping_cost: shippingCost, total } = calculateOrderTotals(
+      subtotal,
+      storeSettings,
+    );
 
     const { data: order, error: orderError } = await this.supabase
       .from('orders')
@@ -136,6 +157,7 @@ export class OrdersService {
         order_number: '',
         status: 'pending',
         subtotal,
+        tax,
         shipping_cost: shippingCost,
         discount: 0,
         total,

@@ -8,6 +8,7 @@ import { useApi } from '@/hooks/use-api';
 import type { Brand } from '@/types';
 import { PageHeader } from '@/components/admin/page-header';
 import { DataTableShell } from '@/components/admin/data-table-shell';
+import { ImageUpload } from '@/components/admin/image-upload';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,12 +40,12 @@ function slugify(text: string) {
     .replace(/^-|-$/g, '');
 }
 
-type BrandForm = { name: string; slug: string; is_active: boolean };
+type BrandForm = { name: string; slug: string; logo_url: string; is_active: boolean };
 
-const emptyForm: BrandForm = { name: '', slug: '', is_active: true };
+const emptyForm: BrandForm = { name: '', slug: '', logo_url: '', is_active: true };
 
 export default function AdminMarcasPage() {
-  const { api } = useApi();
+  const { api, upload } = useApi();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -62,6 +63,7 @@ export default function AdminMarcasPage() {
       const payload = {
         name: form.name.trim(),
         slug: form.slug.trim() || slugify(form.name),
+        logo_url: form.logo_url.trim() || undefined,
         ...(editing ? { is_active: form.is_active } : {}),
       };
       if (editing) {
@@ -128,7 +130,7 @@ export default function AdminMarcasPage() {
                         size="icon-sm"
                         onClick={() => {
                           setEditing(brand);
-                          setForm({ name: brand.name, slug: brand.slug, is_active: true });
+                          setForm({ name: brand.name, slug: brand.slug, logo_url: brand.logo_url ?? '', is_active: true });
                           setDialogOpen(true);
                         }}
                         aria-label={`Editar ${brand.name}`}
@@ -189,6 +191,15 @@ export default function AdminMarcasPage() {
                 required
               />
             </div>
+            <ImageUpload
+              label="Logo de marca"
+              currentUrl={form.logo_url || null}
+              onFileSelected={async (file) => {
+                const result = await upload<{ url: string }>('/upload/product-image', file);
+                setForm((f) => ({ ...f, logo_url: result.url }));
+              }}
+              onRemove={() => setForm((f) => ({ ...f, logo_url: '' }))}
+            />
             {editing ? (
               <div className="flex items-center gap-2">
                 <input

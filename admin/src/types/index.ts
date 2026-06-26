@@ -52,6 +52,7 @@ export interface ProductImage {
   id: string;
   url: string;
   is_primary: boolean;
+  storage_path?: string | null;
 }
 
 export interface CartItem {
@@ -104,8 +105,32 @@ export interface Order {
   status: string;
   total: number;
   subtotal: number;
+  tax?: number;
+  shipping_cost?: number;
+  discount?: number;
+  payment_method?: string;
+  shipping_address?: string;
+  shipping_city?: string;
+  notes?: string;
   created_at: string;
   customer?: Customer;
+  items?: OrderItem[];
+  history?: OrderStatusHistory[];
+}
+
+export interface OrderItem {
+  id: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  product?: Product;
+}
+
+export interface OrderStatusHistory {
+  id: string;
+  status: string;
+  notes?: string;
+  created_at: string;
 }
 
 export interface Sale {

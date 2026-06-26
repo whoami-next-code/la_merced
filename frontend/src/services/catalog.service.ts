@@ -1,17 +1,22 @@
 import { apiFetch } from '@/lib/api/client';
+import { normalizeProduct } from '@/lib/catalog/normalize';
 import type { Product, Category, Brand, Promotion, DashboardOverview } from '@/types';
 
 export const productsService = {
-  list: (params?: { search?: string; categoryId?: string; brandId?: string; page?: number }) => {
+  list: async (params?: { search?: string; categoryId?: string; brandId?: string; page?: number }) => {
     const q = new URLSearchParams();
     if (params?.search) q.set('search', params.search);
     if (params?.categoryId) q.set('categoryId', params.categoryId);
     if (params?.brandId) q.set('brandId', params.brandId);
     if (params?.page) q.set('page', String(params.page));
     const query = q.toString();
-    return apiFetch<{ data: Product[]; total: number }>(`/products${query ? `?${query}` : ''}`);
+    const res = await apiFetch<{ data: Product[]; total: number }>(`/products${query ? `?${query}` : ''}`);
+    return { ...res, data: (res.data ?? []).map(normalizeProduct) };
   },
-  getById: (id: string) => apiFetch<Product>(`/products/${id}`),
+  getById: async (id: string) => {
+    const product = await apiFetch<Product>(`/products/${id}`);
+    return normalizeProduct(product);
+  },
 };
 
 export const categoriesService = {

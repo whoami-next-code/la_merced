@@ -51,6 +51,7 @@ export interface ProductImage {
   id: string;
   url: string;
   is_primary: boolean;
+  storage_path?: string | null;
 }
 
 export interface CartItem {

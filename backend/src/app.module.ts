@@ -20,6 +20,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 
 @Module({
@@ -42,6 +43,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     SettingsModule,
     AuditModule,
     MonitoringModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [
